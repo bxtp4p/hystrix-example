@@ -59,3 +59,5 @@ $ kubectl delete deployment greeting-producer
 ```
 
 If you have `hystrix-dashboard` deployed somewhere, you can also watch this application's stream at `http://<minikube-ip>:31800/hystrix.stream` and see the circuit change from open/close (depending on the availability of the `greeting-producer` service) by hitting the service continuously (for example `$ repeat 100 curl http://<minikube-ip>:31800/get-greeting/bart`).
+
+If you don't have `hystrix-dashboard` deployed, you can use the following repo to deploy Hystrix to Kubernetes: https://github.com/bxtp4p/hystrix-dashboard
