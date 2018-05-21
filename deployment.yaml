@@ -1,0 +1,78 @@
+apiVersion: "extensions/v1beta1"
+kind: Deployment
+metadata:
+  name: "greeting-producer"
+  labels:
+    app: "greeting-producer"
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: "greeting-producer"
+    spec:
+      containers:
+      - name: "greeting-producer"
+        env:
+        - name: "KUBERNETES_NAMESPACE"
+          valueFrom:
+            fieldRef:
+              fieldPath: "metadata.namespace"
+        image: "bxtp4p/hystrix-example-producer:1.0"
+        imagePullPolicy: "Always"
+        ports:
+        - containerPort: 9090
+          name: "http"
+---
+apiVersion: "v1"
+kind: "Service"
+metadata:
+  name: "hystrix-producer-svc" 
+spec:
+  ports:
+  - port: 9090
+    targetPort: 9090
+  selector:
+    app: "greeting-producer"
+---
+apiVersion: "extensions/v1beta1"
+kind: Deployment
+metadata:
+  name: "greeting-consumer"
+  labels:
+    app: "greeting-consumer"
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: "greeting-consumer"
+    spec:
+      containers:
+      - name: "greeting-consumer"
+        env:
+        - name: "KUBERNETES_NAMESPACE"
+          valueFrom:
+            fieldRef:
+              fieldPath: "metadata.namespace"
+        - name: "PRODUCER_ENDPOINT"
+          value: "http://hystrix-producer-svc"
+        - name: "PRODUCER_PORT"
+          value: "9090"
+        image: "bxtp4p/hystrix-example-consumer:1.0"
+        imagePullPolicy: "Always"
+        ports:
+        - containerPort: 8080
+          name: "http"
+---
+apiVersion: "v1"
+kind: "Service"
+metadata:
+  name: "hystrix-consumer-svc" 
+spec:
+  type: NodePort
+  ports:
+  - port: 8080
+    targetPort: 8080
+  selector:
+    app: "greeting-consumer"
